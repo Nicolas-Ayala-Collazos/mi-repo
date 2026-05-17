@@ -1,38 +1,71 @@
-"""Ejemplo basico inspirado en Hugging Face.
+"""Usa un modelo real de Hugging Face para analisis de sentimiento.
 
-Este archivo no descarga modelos. Sirve para entender la idea:
-una frase entra, el programa devuelve una etiqueta de sentimiento.
-
-Modelo real para explorar:
+Modelo usado:
 https://huggingface.co/finiteautomata/beto-sentiment-analysis
+
+El script llama a la API remota de Hugging Face con huggingface_hub.
+Si tienes un token, puedes guardarlo en la variable de entorno HF_TOKEN.
 """
 
-FRASES_POSITIVAS = {"encanta", "excelente", "feliz", "bueno", "genial"}
-FRASES_NEGATIVAS = {"malo", "triste", "odio", "terrible", "problema"}
+from __future__ import annotations
+
+import argparse
+import os
+from typing import Any
+
+from huggingface_hub import InferenceClient
+
+MODEL_ID = "finiteautomata/beto-sentiment-analysis"
+EJEMPLOS = [
+    "Me encanta aprender con este proyecto",
+    "Tengo un problema con la instalacion",
+    "Hoy estamos probando Hugging Face",
+]
 
 
-def analizar_sentimiento(texto: str) -> str:
-    texto_normalizado = texto.lower()
+def _leer_campo(resultado: Any, campo: str) -> Any:
+    if isinstance(resultado, dict):
+        return resultado[campo]
+    return getattr(resultado, campo)
 
-    if any(palabra in texto_normalizado for palabra in FRASES_POSITIVAS):
-        return "positivo"
 
-    if any(palabra in texto_normalizado for palabra in FRASES_NEGATIVAS):
-        return "negativo"
+def analizar_sentimiento(texto: str) -> tuple[str, float]:
+    client = InferenceClient(
+        model=MODEL_ID,
+        provider="hf-inference",
+        token=os.getenv("HF_TOKEN"),
+        timeout=30,
+    )
+    resultados = client.text_classification(texto, top_k=1)
+    mejor = resultados[0]
 
-    return "neutral"
+    etiqueta = str(_leer_campo(mejor, "label"))
+    puntaje = float(_leer_campo(mejor, "score"))
+    return etiqueta, puntaje
 
 
 def main() -> None:
-    ejemplos = [
-        "Me encanta aprender con este proyecto",
-        "Tengo un problema con la instalacion",
-        "Hoy estamos probando Hugging Face",
-    ]
+    parser = argparse.ArgumentParser(
+        description="Clasifica sentimiento en espanol usando un modelo real de Hugging Face."
+    )
+    parser.add_argument(
+        "--texto",
+        help="Texto a clasificar. Si no lo pasas, se usan ejemplos incluidos.",
+    )
+    args = parser.parse_args()
 
-    for frase in ejemplos:
-        sentimiento = analizar_sentimiento(frase)
-        print(f"{frase} -> {sentimiento}")
+    frases = [args.texto] if args.texto else EJEMPLOS
+
+    for frase in frases:
+        try:
+            etiqueta, puntaje = analizar_sentimiento(frase)
+        except Exception as exc:
+            print("No se pudo consultar Hugging Face.")
+            print("Revisa tu conexion o configura un token en HF_TOKEN si la API lo solicita.")
+            print(f"Detalle: {exc}")
+            return
+
+        print(f"{frase} -> {etiqueta} ({puntaje:.2%})")
 
 
 if __name__ == "__main__":
