@@ -4,13 +4,13 @@ Mini proyecto Python creado para probar la conexion entre Codex, GitHub, MCP y H
 
 ## Que hace
 
-El proyecto incluye un script simple que pide tu nombre en consola y muestra un saludo. Tambien incluye un ejemplo basico inspirado en Hugging Face para entender el analisis de sentimiento.
+El proyecto incluye un script simple que pide tu nombre en consola y muestra un saludo. Tambien incluye un ejemplo que usa un modelo real de Hugging Face para analisis de sentimiento en espanol.
 
 ## Archivos
 
 - `main.py`: punto de entrada del programa.
-- `huggingface_demo.py`: ejemplo simple de analisis de sentimiento inspirado en modelos de Hugging Face.
-- `requirements.txt`: dependencias del proyecto, por ahora vacio porque solo usamos Python estandar.
+- `huggingface_demo.py`: usa Hugging Face para clasificar el sentimiento de un texto.
+- `requirements.txt`: dependencias del proyecto.
 - `.gitignore`: reglas basicas para proyectos Python.
 
 ## Como ejecutar el saludo
@@ -21,36 +21,41 @@ Necesitas Python 3 instalado. Luego ejecuta:
 python main.py
 ```
 
-Ejemplo:
+## Como preparar dependencias
 
-```text
-Como te llamas? Nicolas
-Hola, Nicolas. GitHub MCP esta funcionando.
+Instala las dependencias con:
+
+```bash
+python -m pip install -r requirements.txt
 ```
 
-## Como ejecutar el ejemplo de Hugging Face
+## Como usar el modelo de Hugging Face
 
-Ejecuta:
+Ejecuta los ejemplos incluidos:
 
 ```bash
 python huggingface_demo.py
 ```
 
-Salida esperada:
+O clasifica tu propio texto:
 
-```text
-Me encanta aprender con este proyecto -> positivo
-Tengo un problema con la instalacion -> negativo
-Hoy estamos probando Hugging Face -> neutral
+```bash
+python huggingface_demo.py --texto "Me encanta este proyecto"
 ```
 
-## Modelo real para explorar
+Salida esperada aproximada:
 
-El ejemplo se inspira en este modelo de Hugging Face:
+```text
+Me encanta este proyecto -> POS (99.12%)
+```
+
+## Modelo usado
+
+El script usa este modelo real de Hugging Face:
 
 https://huggingface.co/finiteautomata/beto-sentiment-analysis
 
-Ese modelo real sirve para clasificar sentimiento en textos en espanol.
+La llamada se hace con `huggingface_hub.InferenceClient`, usando el proveedor remoto `hf-inference`. Si Hugging Face solicita autenticacion o aparece limite de uso, crea un token en Hugging Face y guardalo como variable de entorno `HF_TOKEN`.
 
 ## Estado de la prueba
 
@@ -58,3 +63,4 @@ Ese modelo real sirve para clasificar sentimiento en textos en espanol.
 - Repositorio visible desde GitHub MCP.
 - Archivos Python creados desde Codex usando MCP.
 - Modelo de Hugging Face encontrado usando Hugging Face MCP.
+- Demo actualizado para llamar a un modelo real de Hugging Face.
