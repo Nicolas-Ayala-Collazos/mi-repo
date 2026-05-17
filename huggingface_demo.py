@@ -16,7 +16,7 @@ from typing import Any
 import requests
 
 MODEL_ID = "finiteautomata/beto-sentiment-analysis"
-API_URL = f"https://api-inference.huggingface.co/models/{MODEL_ID}"
+API_URL = f"https://router.huggingface.co/hf-inference/models/{MODEL_ID}"
 EJEMPLOS = [
     "Me encanta aprender con este proyecto",
     "Tengo un problema con la instalacion",

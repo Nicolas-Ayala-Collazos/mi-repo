@@ -38,7 +38,8 @@ def clasificar_sentimiento(payload: SentimientoRequest) -> SentimientoResponse:
             detail=(
                 "No se pudo consultar Hugging Face. "
                 "Revisa tu conexion, configura HF_TOKEN si la API lo solicita, "
-                "o configura HF_CA_BUNDLE si tu red usa un certificado corporativo. "
+                "configura HF_CA_BUNDLE si tu red usa un certificado corporativo, "
+                "o usa HF_SSL_VERIFY=false solo para una prueba local. "
                 f"Detalle: {exc}"
             ),
         ) from exc
