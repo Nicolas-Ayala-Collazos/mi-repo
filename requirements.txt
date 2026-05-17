@@ -1,1 +1,1 @@
-# Este mini proyecto no necesita dependencias externas por ahora.
+pytest==8.3.4
