@@ -27,6 +27,17 @@ if (-not $env:HF_TOKEN) {
     exit 1
 }
 
+if ($env:HF_CA_BUNDLE) {
+    if (-not (Test-Path $env:HF_CA_BUNDLE)) {
+        Write-Host "HF_CA_BUNDLE apunta a un archivo que no existe: $env:HF_CA_BUNDLE" -ForegroundColor Red
+        exit 1
+    }
+
+    [Environment]::SetEnvironmentVariable("REQUESTS_CA_BUNDLE", $env:HF_CA_BUNDLE, "Process")
+    [Environment]::SetEnvironmentVariable("SSL_CERT_FILE", $env:HF_CA_BUNDLE, "Process")
+    Write-Host "Usando certificado personalizado desde HF_CA_BUNDLE." -ForegroundColor Cyan
+}
+
 Write-Host "Instalando dependencias..." -ForegroundColor Cyan
 python -m pip install -r requirements.txt
 

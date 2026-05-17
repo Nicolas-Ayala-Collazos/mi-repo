@@ -32,6 +32,26 @@ HF_TOKEN=tu_token_nuevo_aqui
 
 No subas `.env` a GitHub. Ya esta protegido por `.gitignore`.
 
+## Si aparece un error SSL
+
+Si ves un error como `CERTIFICATE_VERIFY_FAILED` o `self-signed certificate in certificate chain`, la conexion funciona pero Python no confia en el certificado de tu red.
+
+En redes corporativas, exporta el certificado raiz en formato `.pem` y agregalo a `.env`:
+
+```env
+HF_CA_BUNDLE=C:\ruta\certificado-corporativo.pem
+```
+
+`run_api.ps1` usara esa ruta para configurar `REQUESTS_CA_BUNDLE` y `SSL_CERT_FILE` antes de iniciar la API.
+
+Si no tienes ese certificado y solo quieres probar localmente, agrega esto a `.env`:
+
+```env
+HF_SSL_VERIFY=false
+```
+
+Esto desactiva la verificacion SSL solo para la llamada a Hugging Face del demo. Usalo solo como solucion temporal.
+
 ## Ejecutar la API con un solo script
 
 En PowerShell:

@@ -13,9 +13,10 @@ import argparse
 import os
 from typing import Any
 
-from huggingface_hub import InferenceClient
+import requests
 
 MODEL_ID = "finiteautomata/beto-sentiment-analysis"
+API_URL = f"https://api-inference.huggingface.co/models/{MODEL_ID}"
 EJEMPLOS = [
     "Me encanta aprender con este proyecto",
     "Tengo un problema con la instalacion",
@@ -29,14 +30,29 @@ def _leer_campo(resultado: Any, campo: str) -> Any:
     return getattr(resultado, campo)
 
 
+def _verificar_ssl() -> bool:
+    valor = os.getenv("HF_SSL_VERIFY", "true").strip().lower()
+    return valor not in {"0", "false", "no"}
+
+
 def analizar_sentimiento(texto: str) -> tuple[str, float]:
-    client = InferenceClient(
-        model=MODEL_ID,
-        provider="hf-inference",
-        token=os.getenv("HF_TOKEN"),
+    headers = {}
+    token = os.getenv("HF_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
+    response = requests.post(
+        API_URL,
+        headers=headers,
+        json={"inputs": texto},
         timeout=30,
+        verify=_verificar_ssl(),
     )
-    resultados = client.text_classification(texto, top_k=1)
+    response.raise_for_status()
+
+    resultados = response.json()
+    if isinstance(resultados, list) and resultados and isinstance(resultados[0], list):
+        resultados = resultados[0]
     mejor = resultados[0]
 
     etiqueta = str(_leer_campo(mejor, "label"))
@@ -61,7 +77,7 @@ def main() -> None:
             etiqueta, puntaje = analizar_sentimiento(frase)
         except Exception as exc:
             print("No se pudo consultar Hugging Face.")
-            print("Revisa tu conexion o configura un token en HF_TOKEN si la API lo solicita.")
+            print("Revisa tu conexion, HF_TOKEN, HF_CA_BUNDLE o usa HF_SSL_VERIFY=false para una prueba local.")
             print(f"Detalle: {exc}")
             return
 
