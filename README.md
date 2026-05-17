@@ -4,67 +4,53 @@ Mini proyecto Python creado para probar la conexion entre Codex, GitHub, MCP, Hu
 
 ## Que hace
 
-El proyecto incluye un script simple que pide tu nombre en consola y muestra un saludo. Tambien incluye un ejemplo que usa un modelo real de Hugging Face para analisis de sentimiento en espanol y una API con FastAPI para consumirlo desde HTTP.
+El proyecto incluye una API con FastAPI que clasifica sentimiento en espanol usando un modelo real de Hugging Face.
 
 ## Archivos
 
 - `main.py`: punto de entrada del programa inicial.
 - `huggingface_demo.py`: usa Hugging Face para clasificar el sentimiento de un texto.
 - `app.py`: API con FastAPI para exponer el modelo por HTTP.
+- `run_api.ps1`: script de PowerShell para instalar dependencias, cargar `HF_TOKEN` y levantar la API.
+- `.env.example`: plantilla para crear tu archivo local `.env`.
 - `requirements.txt`: dependencias del proyecto.
-- `.gitignore`: reglas basicas para proyectos Python.
+- `.gitignore`: evita subir archivos privados como `.env`.
 
-## Como preparar dependencias
+## Configurar el token una sola vez
 
-Instala las dependencias con:
-
-```bash
-python -m pip install -r requirements.txt
-```
-
-Si Hugging Face solicita autenticacion, crea un token de lectura y guardalo en la variable de entorno `HF_TOKEN`.
-
-En PowerShell, solo para la terminal actual:
+Copia la plantilla:
 
 ```powershell
-$env:HF_TOKEN="TU_TOKEN_NUEVO"
+Copy-Item .env.example .env
 ```
 
-## Como usar el modelo desde consola
+Abre `.env` en VS Code y reemplaza el texto por tu token nuevo:
 
-Ejecuta los ejemplos incluidos:
-
-```bash
-python huggingface_demo.py
+```env
+HF_TOKEN=tu_token_nuevo_aqui
 ```
 
-O clasifica tu propio texto:
+No subas `.env` a GitHub. Ya esta protegido por `.gitignore`.
 
-```bash
-python huggingface_demo.py --texto "Me encanta este proyecto"
+## Ejecutar la API con un solo script
+
+En PowerShell:
+
+```powershell
+.\run_api.ps1
 ```
 
-Salida esperada aproximada:
+El script hace tres cosas:
 
-```text
-Me encanta este proyecto -> POS (99.12%)
-```
+1. Lee `HF_TOKEN` desde `.env`.
+2. Instala dependencias con `python -m pip install -r requirements.txt`.
+3. Levanta FastAPI con `python -m uvicorn app:app --reload`.
 
-## Como ejecutar la API con FastAPI
-
-Levanta el servidor local:
-
-```bash
-python -m uvicorn app:app --reload
-```
-
-Luego abre en el navegador:
+Luego abre:
 
 ```text
 http://127.0.0.1:8000/docs
 ```
-
-FastAPI genera una pagina interactiva donde puedes probar la API.
 
 ## Endpoints
 
@@ -99,14 +85,6 @@ Ejemplo de respuesta:
 }
 ```
 
-## Probar desde PowerShell
-
-Con el servidor corriendo, ejecuta en otra terminal:
-
-```powershell
-Invoke-RestMethod -Uri "http://127.0.0.1:8000/sentimiento" -Method Post -ContentType "application/json" -Body '{"texto":"Me encanta este proyecto"}'
-```
-
 ## Modelo usado
 
 El script usa este modelo real de Hugging Face:
@@ -114,12 +92,3 @@ El script usa este modelo real de Hugging Face:
 https://huggingface.co/finiteautomata/beto-sentiment-analysis
 
 La llamada se hace con `huggingface_hub.InferenceClient`, usando el proveedor remoto `hf-inference`.
-
-## Estado de la prueba
-
-- Repositorio creado en GitHub.
-- Repositorio visible desde GitHub MCP.
-- Archivos Python creados desde Codex usando MCP.
-- Modelo de Hugging Face encontrado usando Hugging Face MCP.
-- Demo actualizado para llamar a un modelo real de Hugging Face.
-- API agregada con FastAPI.
