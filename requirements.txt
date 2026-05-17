@@ -1,1 +1,1 @@
-# Este mini proyecto no necesita dependencias externas por ahora.
+huggingface_hub>=1.0.0
