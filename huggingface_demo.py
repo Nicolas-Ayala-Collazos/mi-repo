@@ -1,6 +1,6 @@
 """Usa un modelo real de Hugging Face para analisis de sentimiento.
 
-Modelo usado:
+Modelo usado por defecto:
 https://huggingface.co/finiteautomata/beto-sentiment-analysis
 
 El script llama a la API remota de Hugging Face con huggingface_hub.
