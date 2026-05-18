@@ -70,6 +70,6 @@ $env:HF_MODEL = $HfModel
 $env:HF_TOKEN = $HfToken
 
 Write-Host "Usando modelo: $env:HF_MODEL"
-Write-Host "Levantando la aplicacion en http://localhost:8001 ..."
+Write-Host "Levantando la aplicacion Flask en http://localhost:8000 ..."
 
 docker compose up --build
