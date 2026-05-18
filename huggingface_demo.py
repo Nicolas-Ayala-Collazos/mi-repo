@@ -1,6 +1,6 @@
 """Usa un modelo real de Hugging Face para analisis de sentimiento.
 
-Modelo usado:
+Modelo usado por defecto:
 https://huggingface.co/finiteautomata/beto-sentiment-analysis
 
 El script llama a la API remota de Hugging Face con huggingface_hub.
@@ -15,7 +15,7 @@ from typing import Any
 
 from huggingface_hub import InferenceClient
 
-MODEL_ID = "finiteautomata/beto-sentiment-analysis"
+MODEL_ID = os.getenv("HF_MODEL", "finiteautomata/beto-sentiment-analysis")
 EJEMPLOS = [
     "Me encanta aprender con este proyecto",
     "Tengo un problema con la instalacion",
