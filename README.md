@@ -1,137 +1,88 @@
 # mi-repo
 
-Mini proyecto Python creado para probar la conexion entre Codex, GitHub, MCP, Hugging Face, FastAPI y Docker.
+Aplicacion web y API REST para clasificar sentimientos de texto usando Docker y un modelo de Hugging Face.
 
-## Que hace
+## Modelo
 
-El proyecto incluye una API con FastAPI que clasifica sentimiento en espanol usando un modelo real de Hugging Face. Esta rama agrega Docker para ejecutar la API dentro de un contenedor.
+Usa `finiteautomata/beto-sentiment-analysis` a traves de la API de inferencia de Hugging Face. Puedes cambiarlo con la variable `HF_MODEL`. La aplicacion soporta etiquetas `NEG`, `NEU`, `POS` y tambien modelos que devuelven calificaciones de 1 a 5 estrellas.
 
-## Archivos
+- `NEG` o 1-2 estrellas: `negativo`.
+- `NEU` o 3 estrellas: `neutral`.
+- `POS` o 4-5 estrellas: `positivo`.
 
-- `main.py`: punto de entrada del programa inicial.
-- `huggingface_demo.py`: usa Hugging Face para clasificar el sentimiento de un texto.
-- `app.py`: API con FastAPI para exponer el modelo por HTTP.
-- `run_api.ps1`: script de PowerShell para ejecutar la API localmente sin Docker.
-- `Dockerfile`: instrucciones para construir la imagen Docker.
-- `docker-compose.yml`: configuracion para levantar la API con Docker Compose.
-- `.dockerignore`: evita copiar archivos innecesarios o secretos a la imagen.
-- `.env.example`: plantilla para crear tu archivo local `.env`.
-- `requirements.txt`: dependencias del proyecto.
-- `.gitignore`: evita subir archivos privados como `.env`.
+## Ejecutar con Docker
 
-## Configurar el token una sola vez
-
-Copia la plantilla:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Abre `.env` en VS Code y reemplaza el texto por tu token nuevo:
-
-```env
-HF_TOKEN=tu_token_nuevo_aqui
-```
-
-No subas `.env` a GitHub. Ya esta protegido por `.gitignore` y tambien queda fuera de la imagen por `.dockerignore`.
-
-## Ejecutar sin Docker
-
-En PowerShell:
-
-```powershell
-.\run_api.ps1
-```
-
-Luego abre:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
-## Ejecutar con Docker Compose
-
-Con Docker Desktop abierto, ejecuta:
-
-```powershell
+```bash
 docker compose up --build
 ```
 
 Luego abre:
 
 ```text
-http://127.0.0.1:8000/docs
+http://localhost:8001
 ```
 
-Para apagar:
+Esta version no instala PyTorch ni descarga el modelo dentro del contenedor, por eso construye mucho mas rapido. Hugging Face puede exigir autenticacion para la API de inferencia. Define tu token antes de levantar Docker:
+
+```bash
+export HF_TOKEN=tu_token
+```
+
+En PowerShell:
 
 ```powershell
-Ctrl + C
+$env:HF_TOKEN="tu_token"
 ```
 
-O en otra terminal:
+Tambien puedes usar el script de PowerShell incluido:
 
 ```powershell
-docker compose down
+.\run.ps1
 ```
 
-## Ejecutar con Docker sin Compose
+El script lee automaticamente el archivo `.env` si existe.
 
-Construir la imagen:
+O pasar el token directamente:
 
 ```powershell
-docker build -t sentimiento-api .
+.\run.ps1 -HfToken "hf_tu_token"
 ```
 
-Ejecutar el contenedor usando tu `.env` local:
-
-```powershell
-docker run --rm -p 8000:8000 --env-file .env sentimiento-api
-```
-
-Luego abre:
+Tambien puedes crear un archivo `.env` tomando como base `.env.example`:
 
 ```text
-http://127.0.0.1:8000/docs
+HF_MODEL=finiteautomata/beto-sentiment-analysis
+HF_TOKEN=hf_tu_token
+```
+
+Para usar otro modelo:
+
+```powershell
+$env:HF_MODEL="nlptown/bert-base-multilingual-uncased-sentiment"
+```
+
+## Probar la API
+
+```bash
+curl -X POST http://localhost:8001/predict \
+  -H "Content-Type: application/json" \
+  -d "{\"text\":\"Me encanto el servicio, fue rapido y muy amable.\"}"
+```
+
+Respuesta de ejemplo:
+
+```json
+{
+  "text": "Me encanto el servicio, fue rapido y muy amable.",
+  "sentiment": "positivo",
+  "stars": 5,
+  "confidence": 0.71,
+  "model": "finiteautomata/beto-sentiment-analysis"
+}
 ```
 
 ## Endpoints
 
-Revisar si la API esta viva:
-
-```text
-GET /health
-```
-
-Clasificar sentimiento:
-
-```text
-POST /sentimiento
-```
-
-Ejemplo de cuerpo JSON:
-
-```json
-{
-  "texto": "Me encanta este proyecto"
-}
-```
-
-Ejemplo de respuesta:
-
-```json
-{
-  "texto": "Me encanta este proyecto",
-  "etiqueta": "POS",
-  "puntaje": 0.9912,
-  "modelo": "finiteautomata/beto-sentiment-analysis"
-}
-```
-
-## Modelo usado
-
-El script usa este modelo real de Hugging Face:
-
-https://huggingface.co/finiteautomata/beto-sentiment-analysis
-
-La llamada se hace con `huggingface_hub.InferenceClient`, usando el proveedor remoto `hf-inference`.
+- `GET /`: interfaz web.
+- `GET /health`: estado de la aplicacion.
+- `POST /predict`: clasifica un texto.
