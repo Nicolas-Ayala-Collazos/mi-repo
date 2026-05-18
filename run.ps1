@@ -1,11 +1,50 @@
 param(
-    [string]$HfToken = $env:HF_TOKEN,
-    [string]$HfModel = $env:HF_MODEL
+    [string]$HfToken,
+    [string]$HfModel
 )
 
 $ErrorActionPreference = "Stop"
 
 Set-Location -LiteralPath $PSScriptRoot
+
+function Read-DotEnv {
+    param([string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return
+    }
+
+    Get-Content -LiteralPath $Path | ForEach-Object {
+        $line = $_.Trim()
+
+        if ([string]::IsNullOrWhiteSpace($line) -or $line.StartsWith("#")) {
+            return
+        }
+
+        $parts = $line -split "=", 2
+
+        if ($parts.Count -ne 2) {
+            return
+        }
+
+        $name = $parts[0].Trim()
+        $value = $parts[1].Trim().Trim('"').Trim("'")
+
+        if (-not [string]::IsNullOrWhiteSpace($name)) {
+            Set-Item -Path "Env:$name" -Value $value
+        }
+    }
+}
+
+Read-DotEnv -Path (Join-Path $PSScriptRoot ".env")
+
+if ([string]::IsNullOrWhiteSpace($HfToken)) {
+    $HfToken = $env:HF_TOKEN
+}
+
+if ([string]::IsNullOrWhiteSpace($HfModel)) {
+    $HfModel = $env:HF_MODEL
+}
 
 if ([string]::IsNullOrWhiteSpace($HfModel)) {
     $HfModel = "finiteautomata/beto-sentiment-analysis"
